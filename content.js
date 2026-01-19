@@ -120,13 +120,13 @@ async function startPluginAudit() {
         }
 
         if (!hasAnyActivityThisMonth) {
-            // return { status: "❌ 本月无活动", color: "#f56c6c" };
+            // return { status: "本月无活动", color: "#f56c6c" };
             return { status: "本月无活动", color: "#f56c6c" };
         } else if (!hasThemeDayThisMonth) {
             // return { status: "⚠️ 缺少主题党日", color: "#e6a23c" };
             return { status: "缺少主题党日", color: "#e6a23c" };
         } else {
-            // return { status: "✅ 达标", color: "#67c23a" };
+            // return { status: "达标", color: "#67c23a" };
             return { status: "已建立主题党日", color: "#67c23a" };
         }
     }
@@ -268,89 +268,273 @@ function setupQRCodeDropArea() {
     //     };
     //     reader.readAsDataURL(file);
     // }
-        async function handleDrop(e) {
-            const dt = e.dataTransfer;
-            const files = dt.files;
 
-            if (files.length === 0) {
-                qrcodeResultDiv.innerHTML = "请拖入图片文件！";
-                return;
-            }
+
+//              第三遍改async代码
+            // async function handleDrop(e) {
+            //     e.preventDefault();
+            //     const qrcodeResultDiv = document.getElementById("qrcode-result");
+            //     const dt = e.dataTransfer;
+            //     const files = dt.files;
+
+            //     if (files.length === 0) return;
+
+            //     console.log("--- 收到图片，准备解析 ---");
+            //     qrcodeResultDiv.innerHTML = "正在解析...";
+
+            //     const reader = new FileReader();
+            //     reader.onload = async (event) => {
+            //     const img = new Image();
+            //     img.onload = () => {
+            //         const canvas = document.createElement("canvas");
+            //         const ctx = canvas.getContext("2d");
+
+            //         // const padding = 20; 
+            //         // canvas.width = img.width + padding * 2;
+            //         // canvas.height = img.height + padding * 2;
+            //         const targetSize = 600; 
+            //         const scale = Math.min(targetSize / img.width, targetSize / img.height);
+            //         const nw = img.width * scale;
+            //         const nh = img.height * scale;
+                    
+            //         const padding = 40; // 20→40 加大白边
+            //         canvas.width = nw + padding * 2;
+            //         canvas.height = nh + padding * 2;
+
+            //         ctx.fillStyle = "#ffffff";
+            //         ctx.fillRect(0, 0, canvas.width, canvas.height);
+            //          // 开启平滑处理（模拟截图模糊感）
+            //         ctx.imageSmoothingEnabled = true;
+            //         ctx.imageSmoothingQuality = 'high';
+            //         ctx.drawImage(img, padding, padding, img.width, img.height);
+
+            //         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+                    
+                    
+            //         try {
+            //         // 检查库是否存在
+            //         if (typeof jsQR === 'undefined') {
+            //             console.error("致命错误：jsQR 库未定义，请检查 manifest.json 配置！");
+            //             qrcodeResultDiv.innerHTML = "<b style='color:red;'>插件配置错误：找不到解析库</b>";
+            //             return;
+            //         }
+
+            //         const code = jsQR(imageData.data, imageData.width, imageData.height);
+                    
+            //         if (code) {
+            //             const rawText = code.data.trim();
+            //             console.log("识别到的文本原始内容:", rawText);
+
+            //             // 直接暴力提取 6 位数字，不管是 JSON 还是网址
+            //             const numMatch = rawText.match(/\d{6}/);
+            //             if (numMatch) {
+            //             currentActivityId = numMatch[0];
+            //             console.log("【成功】提取到 ID:", currentActivityId);
+            //             qrcodeResultDiv.innerHTML = `解析成功！ID: <b style="color:blue; font-size:16px;">${currentActivityId}</b>`;
+            //             } else {
+            //             console.warn("未能从文本中找到 6 位数字:", rawText);
+            //             qrcodeResultDiv.innerHTML = `识别到内容但无ID: ${rawText.substring(0,20)}...`;
+            //             }
+            //         } else {
+            //             console.warn("jsQR 未能识别二维码");
+            //             qrcodeResultDiv.innerHTML = "识别失败，请尝试重新截图拖入";
+            //         }
+            //         } catch (err) {
+            //         console.error("代码运行崩溃:", err);
+            //         qrcodeResultDiv.innerHTML = "运行异常: " + err.message;
+            //         }
+            //     };
+            //     img.src = event.target.result;
+            //     };
+            //     reader.readAsDataURL(files[0]);
+            // }
+
+   
+   
+    // 第二遍改async代码
+        // async function handleDrop(e) {
+        //     const dt = e.dataTransfer;
+        //     const files = dt.files;
+
+        //     if (files.length === 0) {
+        //         qrcodeResultDiv.innerHTML = "请拖入图片文件！";
+        //         return;
+        //     }
             
-            const file = files[0];
-            if (!file.type.startsWith('image/')) {
-                qrcodeResultDiv.innerHTML = "请拖入图片文件！";
-                return;
-            }
+        //     const file = files[0];
+        //     if (!file.type.startsWith('image/')) {
+        //         qrcodeResultDiv.innerHTML = "请拖入图片文件！";
+        //         return;
+        //     }
 
-            qrcodeResultDiv.innerHTML = "正在解析二维码...";
-            const reader = new FileReader();
-            reader.onload = async (event) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    ctx.drawImage(img, 0, 0, img.width, img.height);
-                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        //     qrcodeResultDiv.innerHTML = "正在解析二维码...";
+        //     const reader = new FileReader();
+        //     reader.onload = async (event) => {
+        //         const img = new Image();
+        //         img.onload = () => {
+        //             const canvas = document.createElement('canvas');
+        //             const ctx = canvas.getContext('2d');
+        //             // canvas.width = img.width;
+        //             // canvas.height = img.height;
+        //             // ctx.drawImage(img, 0, 0, img.width, img.height);
 
-                    try {
-                        const code = jsQR(imageData.data, imageData.width, imageData.height);
-                        if (code) {
-                            const qrcodeContent = code.data.trim();
-                            console.log("二维码原始数据:", qrcodeContent);
+        //             //防止二维码出现静边，加的调试代码
+        //             const padding = 20; 
+        //             canvas.width = img.width + padding * 2;
+        //             canvas.height = img.height + padding * 2;
+        //             ctx.fillStyle = "#ffffff";
+        //             ctx.fillRect(0, 0, canvas.width, canvas.height);
+        //             ctx.drawImage(img, padding, padding, img.width, img.height);
 
-                            let id = null;
+        //             //canvas预览，证实20px没有出现问题
+        //             // canvas.style.position = "fixed";
+        //             // canvas.style.bottom = "0";
+        //             // canvas.style.left = "0";
+        //             // canvas.style.zIndex = "999999";
+        //             // canvas.style.border = "5px solid red"; // 红框圈起来，方便找
+        //             // document.body.appendChild(canvas);
 
-                            // 逻辑 A：解析是否为 JSON 格式
-                            try {
-                                const jsonData = JSON.parse(qrcodeContent);
-                                if (jsonData && jsonData.data) {
-                                    id = jsonData.data; // 提取data字段
-                                    console.log("从 JSON 中提取到 ID:", id);
-                                }
-                            } catch (jsonErr) {
-                                // 如果不是 JSON，继续走传统解析逻辑
-                            }
+        //             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-                            // 逻辑 B：网址格式
-                            if (!id && qrcodeContent.startsWith('http')) {
-                                try {
-                                    const urlObj = new URL(qrcodeContent);
-                                    id = urlObj.searchParams.get('id');
-                                } catch (e) {}
-                            }
+        //             try {
+        //                 const code = jsQR(imageData.data, imageData.width, imageData.height);
+        //                 if (code) {
+        //                     const qrcodeContent = code.data.trim();
+        //                     console.log("二维码原始数据:", qrcodeContent);
 
-                            // 逻辑 C：利用正则匹配 6 位左右的纯数字
-                            if (!id) {
-                                const match = qrcodeContent.match(/\d{6}/); 
-                                id = match ? match[0] : qrcodeContent;
-                            }
+        //                     let id = null;
 
-                            if (id) {
-                                currentActivityId = id;
-                                // qrcodeResultDiv.innerHTML = `✅ 解析成功！活动ID: <b style="color:blue; font-size:16px;">${id}</b>`;
-                                qrcodeResultDiv.innerHTML = `解析成功！活动ID: <b style="color:blue; font-size:14px;">${id}</b>`;
-                            } else {
-                                // qrcodeResultDiv.innerHTML = `⚠️ 识别到内容但未找到ID: ${qrcodeContent}`;
-                                qrcodeResultDiv.innerHTML = `识别到内容但未找到ID: ${qrcodeContent}`;
-                            }
-                        } else {
-                            // qrcodeResultDiv.innerHTML = "❌ 未能识别，请确保二维码清晰且未被遮挡";
-                            qrcodeResultDiv.innerHTML = "未能识别，请确保二维码清晰且未被遮挡";
-                        }
-                    } catch (error) {
-                        // qrcodeResultDiv.innerHTML = `❌ 系统错误: ${error.message}`;
-                        qrcodeResultDiv.innerHTML = `❌ 系统错误: ${error.message}`;
-                        console.error("解析异常:", error);
+        //                     // 逻辑 A：解析是否为 JSON 格式
+        //                     try {
+        //                         const jsonData = JSON.parse(qrcodeContent);
+        //                         if (jsonData && jsonData.data) {
+        //                             id = jsonData.data; // 提取data字段
+        //                             console.log("从 JSON 中提取到 ID:", id);
+        //                         }
+        //                     } catch (jsonErr) {
+        //                         // 如果不是 JSON，继续走传统解析逻辑
+        //                     }
+
+        //                     // 逻辑 B：网址格式
+        //                     if (!id && qrcodeContent.startsWith('http')) {
+        //                         try {
+        //                             const urlObj = new URL(qrcodeContent);
+        //                             id = urlObj.searchParams.get('id');
+        //                         } catch (e) {}
+        //                     }
+
+        //                     // 逻辑 C：利用正则匹配 6 位左右的纯数字
+        //                     if (!id) {
+        //                         const match = qrcodeContent.match(/\d{6}/); 
+        //                         id = match ? match[0] : qrcodeContent;
+        //                     }
+
+        //                     if (id) {
+        //                         currentActivityId = id;
+        //                         // qrcodeResultDiv.innerHTML = `解析成功！活动ID: <b style="color:blue; font-size:16px;">${id}</b>`;
+        //                         qrcodeResultDiv.innerHTML = `解析成功！活动ID: <b style="color:blue; font-size:14px;">${id}</b>`;
+        //                     } else {
+        //                         // qrcodeResultDiv.innerHTML = `⚠️ 识别到内容但未找到ID: ${qrcodeContent}`;
+        //                         qrcodeResultDiv.innerHTML = `识别到内容但未找到ID: ${qrcodeContent}`;
+        //                     }
+        //                 } else {
+        //                     // qrcodeResultDiv.innerHTML = "未能识别，请确保二维码清晰且未被遮挡";
+        //                     qrcodeResultDiv.innerHTML = "未能识别，请确保二维码清晰且未被遮挡";
+        //                 }
+        //             } catch (error) {
+        //                 // qrcodeResultDiv.innerHTML = `系统错误: ${error.message}`;
+        //                 qrcodeResultDiv.innerHTML = `系统错误: ${error.message}`;
+        //                 console.error("解析异常:", error);
+        //             }
+        //         };
+        //         img.src = event.target.result;
+        //     };
+        //     reader.readAsDataURL(file);
+        // }
+
+async function handleDrop(e) {
+    e.preventDefault();
+    const qrcodeResultDiv = document.getElementById("qrcode-result");
+    const dt = e.dataTransfer;
+    const files = dt.files;
+
+    if (files.length === 0) return;
+
+    qrcodeResultDiv.innerHTML = "⌛ 正在处理并尝试解析...";
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+            // 1. 创建画布
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+
+            // 2. 模拟最适合识别的状态：加 60px 的超大白边，并适当缩放
+            // 缩放，二维码的像素点重新分布，模拟截图后的重采样效果
+            const targetSize = 500; 
+            const scale = targetSize / Math.max(img.width, img.height);
+            const nw = img.width * scale;
+            const nh = img.height * scale;
+            const padding = 60; 
+
+            canvas.width = nw + padding * 2;
+            canvas.height = nh + padding * 2;
+
+            // 3. 填充纯白背景
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 4. 开启平滑渲染
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, padding, padding, nw, nh);
+
+            // ============= 【关键：把处理后的图贴在网页底部】 =============
+            // 移除旧的预览
+            // const oldCanvas = document.getElementById("debug-canvas-preview");
+            // if (oldCanvas) oldCanvas.remove();
+
+            // canvas.id = "debug-canvas-preview";
+            // canvas.style.cssText = "position:fixed; bottom:20px; right:20px; z-index:9999; border:10px solid red; box-shadow:0 0 20px rgba(0,0,0,0.5); background:#fff;";
+            // document.body.appendChild(canvas);
+            
+            // 添加一个提示文字
+            // const tip = document.createElement("div");
+            // tip.innerText = "请用手机扫这张带红框的图试下";
+            // tip.style.cssText = "position:fixed; bottom:0; right:20px; z-index:9999; background:red; color:white; font-size:12px; padding:2px 5px;";
+            // canvas.after(tip);
+            // =================================================================
+
+            // 5. 尝试解析
+            try {
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+                
+                if (code) {
+                    const match = code.data.match(/\d{6}/);
+                    if (match) {
+                        currentActivityId = match[0];
+                        qrcodeResultDiv.innerHTML = `识别成功！ID: <b style="color:blue;">${currentActivityId}</b>`;
+                        // 成功后 2 秒自动移除预览
+                        setTimeout(() => { canvas.remove(); tip.remove(); }, 2000);
+                        return;
                     }
-                };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
+                }
+                
+                // 走到这里说明 jsQR 认不出来，但可以手动扫
+                qrcodeResultDiv.innerHTML = "<b style='color:red;'>jsQR认不出，请手机扫红框图确认</b>";
+                console.warn("jsQR 解析结果为空，请尝试手机扫描页面右下角红框图片");
+                
+            } catch (err) {
+                qrcodeResultDiv.innerHTML = "解析崩溃: " + err.message;
+            }
+        };
+        img.src = event.target.result;
+    };
+    reader.readAsDataURL(files[0]);
+}
 
 }
 
@@ -414,7 +598,7 @@ async function startBatchSignIn() {
 
             if (!token) {
                 results.push({ idCard, status: "登录失败" });
-                statusBox.innerHTML = `<span style='color:red'>❌ [${i + 1}/${members.length}] ${idCard} 登录失败</span>`;
+                statusBox.innerHTML = `<span style='color:red'>[${i + 1}/${members.length}] ${idCard} 登录失败</span>`;
                 await sleep(1000);
                 continue;
             }
@@ -425,8 +609,8 @@ async function startBatchSignIn() {
             const signinResult = await signinResponse.json();
 
             if (signinResult.Code === 200) {
-                // results.push({ idCard, status: "✅ 签到成功" });
-                // statusBox.innerHTML = `<span style='color:green'>✅ [${i + 1}/${members.length}] ${idCard} 签到成功</span>`;
+                // results.push({ idCard, status: "签到成功" });
+                // statusBox.innerHTML = `<span style='color:green'>[${i + 1}/${members.length}] ${idCard} 签到成功</span>`;
                 results.push({ idCard, status: "签到成功" });
                 statusBox.innerHTML = `<span style='color:green'> [${i + 1}/${members.length}] ${idCard} 签到成功</span>`;
             } else {
