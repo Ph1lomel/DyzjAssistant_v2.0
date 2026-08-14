@@ -16,7 +16,7 @@ function injectAuditPanel() {
     
     panel.innerHTML = `
         <div id="audit-panel-header" style="font-weight:bold; color:#333; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; cursor: move; user-select: none;">
-            <span>浙北党员之家助手 v2.0</span>
+            <span>浙北党员之家助手 v2.1</span>
             <button id="close-audit-panel" style="background:none; border:none; cursor:pointer; color:#999; font-size:18px;">&times;</button>
          </div>
 
@@ -538,12 +538,106 @@ async function handleDrop(e) {
 
 }
 
-// --- 批量签到功能 ---
+// --- 批量签到功能 v2.0 签到完成之后，仍然显示签到中 故注释 在2.1中改进---
+// async function startBatchSignIn() {
+//     const statusBox = document.getElementById('signin-plugin-status');
+//     const btn = document.getElementById('run-signin-btn-plugin');
+//     const memberListTextArea = document.getElementById('signin-member-list');
+
+//     if (!currentActivityId) {
+//         statusBox.innerHTML = "<span style='color:red'>请先拖入二维码解析出活动ID！</span>";
+//         return;
+//     }
+//     const memberListText = memberListTextArea.value.trim();
+//     if (!memberListText) {
+//         statusBox.innerHTML = "<span style='color:red'>请粘贴人员名单！</span>";
+//         return;
+//     }
+
+//     btn.disabled = true;
+//     btn.innerText = "签到中...";
+//     statusBox.innerHTML = "开始批量签到...";
+
+//     const members = memberListText.split('\n').map(line => line.trim()).filter(line => line);
+//     const results = [];
+
+//     for (let i = 0; i < members.length; i++) {
+//         const line = members[i];
+//         const parts = line.split(/\s+/); // 按空格或多个空格分割
+//         if (parts.length < 2) {
+//             results.push({ idCard: parts[0] || "未知", status: "格式错误" });
+//             statusBox.innerHTML = `⚠️ [${i + 1}/${members.length}] ${parts[0] || "未知"} 格式错误`;
+//             await sleep(500);
+//             continue;
+//         }
+//         const idCard = parts[0];
+//         const rawPassword = parts[1];
+
+//         statusBox.innerHTML = `⏳ [${i + 1}/${members.length}] 正在处理: ${idCard}`;
+        
+//         try {
+//             let token = null;
+//             const passwordsToTry = [rawPassword];
+//             if (!rawPassword.includes("Dygl@")) { // 避免重复添加
+//                 passwordsToTry.push(`Dygl@${rawPassword}`);
+//             }
+
+//             for (let pwd of passwordsToTry) {
+//                 const loginPayload = { idCard: idCard, joinTime: pwd };
+//                 const loginResponse = await fetch(LOGIN_URL, {
+//                     method: 'POST',
+//                     headers: { 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1' },
+//                     body: JSON.stringify(loginPayload)
+//                 });
+//                 const loginResult = await loginResponse.json();
+//                 if (loginResult.Code === 200 && loginResult.Result && loginResult.Result.Token && loginResult.Result.Token.access_token) {
+//                     token = loginResult.Result.Token.access_token;
+//                     break;
+//                 }
+//             }
+
+//             if (!token) {
+//                 results.push({ idCard, status: "登录失败" });
+//                 statusBox.innerHTML = `<span style='color:red'>[${i + 1}/${members.length}] ${idCard} 登录失败</span>`;
+//                 await sleep(1000);
+//                 continue;
+//             }
+
+//             const signinResponse = await fetch(`${SIGNIN_URL}?id=${currentActivityId}`, {
+//                 headers: { 'Authorization': `Bearer ${token}`, 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1' },
+//             });
+//             const signinResult = await signinResponse.json();
+
+//             if (signinResult.Code === 200) {
+//                 // results.push({ idCard, status: "签到成功" });
+//                 // statusBox.innerHTML = `<span style='color:green'>[${i + 1}/${members.length}] ${idCard} 签到成功</span>`;
+//                 results.push({ idCard, status: "签到成功" });
+//                 statusBox.innerHTML = `<span style='color:green'> [${i + 1}/${members.length}] ${idCard} 签到成功</span>`;
+//             } else {
+//                 results.push({ idCard, status: `签到失败: ${signinResult.ErrorMSG || '未知错误'}` });
+//                 statusBox.innerHTML = `<span style='color:red'>[${i + 1}/${members.length}] ${idCard} 签到失败</span>`;
+//             }
+
+//         } catch (error) {
+//             results.push({ idCard, status: `异常: ${error.message}` });
+//             statusBox.innerHTML = `<span style='color:red'> [${i + 1}/${members.length}] ${idCard} 异常: ${error.message}</span>`;
+//             console.error(`签到异常(${idCard}):`, error);
+//         }
+//         await sleep(1500); // 每个请求之间增加延迟，防止服务器封禁
+//     }
+    
+//     statusBox.innerHTML = "<b style='color:green'>批量签到任务完成！</b>";
+//     alert(`批量签到完成！共处理 ${members.length} 人。`);
+//     console.table(results); // 详细结果可在F12控制台查看
+// }
+
+// v2.1 改进签到功能
 async function startBatchSignIn() {
     const statusBox = document.getElementById('signin-plugin-status');
     const btn = document.getElementById('run-signin-btn-plugin');
     const memberListTextArea = document.getElementById('signin-member-list');
 
+    // 1. 基础校验
     if (!currentActivityId) {
         statusBox.innerHTML = "<span style='color:red'>请先拖入二维码解析出活动ID！</span>";
         return;
@@ -554,81 +648,94 @@ async function startBatchSignIn() {
         return;
     }
 
+    // 2. 开始前锁定按钮
     btn.disabled = true;
     btn.innerText = "签到中...";
+    btn.style.background = "#ccc"; // 变成灰色表示不可点击
     statusBox.innerHTML = "开始批量签到...";
 
     const members = memberListText.split('\n').map(line => line.trim()).filter(line => line);
     const results = [];
 
-    for (let i = 0; i < members.length; i++) {
-        const line = members[i];
-        const parts = line.split(/\s+/); // 按空格或多个空格分割
-        if (parts.length < 2) {
-            results.push({ idCard: parts[0] || "未知", status: "格式错误" });
-            statusBox.innerHTML = `⚠️ [${i + 1}/${members.length}] ${parts[0] || "未知"} 格式错误`;
-            await sleep(500);
-            continue;
-        }
-        const idCard = parts[0];
-        const rawPassword = parts[1];
-
-        statusBox.innerHTML = `⏳ [${i + 1}/${members.length}] 正在处理: ${idCard}`;
-        
-        try {
-            let token = null;
-            const passwordsToTry = [rawPassword];
-            if (!rawPassword.includes("Dygl@")) { // 避免重复添加
-                passwordsToTry.push(`Dygl@${rawPassword}`);
-            }
-
-            for (let pwd of passwordsToTry) {
-                const loginPayload = { idCard: idCard, joinTime: pwd };
-                const loginResponse = await fetch(LOGIN_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1' },
-                    body: JSON.stringify(loginPayload)
-                });
-                const loginResult = await loginResponse.json();
-                if (loginResult.Code === 200 && loginResult.Result && loginResult.Result.Token && loginResult.Result.Token.access_token) {
-                    token = loginResult.Result.Token.access_token;
-                    break;
-                }
-            }
-
-            if (!token) {
-                results.push({ idCard, status: "登录失败" });
-                statusBox.innerHTML = `<span style='color:red'>[${i + 1}/${members.length}] ${idCard} 登录失败</span>`;
-                await sleep(1000);
+    try {
+        // 3. 执行循环任务
+        for (let i = 0; i < members.length; i++) {
+            const line = members[i];
+            const parts = line.split(/\s+/); 
+            if (parts.length < 2) {
+                results.push({ idCard: parts[0] || "未知", status: "格式错误" });
+                statusBox.innerHTML = `⚠️ [${i + 1}/${members.length}] ${parts[0] || "未知"} 格式错误`;
+                await sleep(500);
                 continue;
             }
+            const idCard = parts[0];
+            const rawPassword = parts[1];
 
-            const signinResponse = await fetch(`${SIGNIN_URL}?id=${currentActivityId}`, {
-                headers: { 'Authorization': `Bearer ${token}`, 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1' },
-            });
-            const signinResult = await signinResponse.json();
+            statusBox.innerHTML = `⏳ [${i + 1}/${members.length}] 正在处理: ${idCard}`;
+            
+            try {
+                let token = null;
+                const passwordsToTry = [rawPassword];
+                if (!rawPassword.includes("Dygl@")) {
+                    passwordsToTry.push(`Dygl@${rawPassword}`);
+                }
 
-            if (signinResult.Code === 200) {
-                // results.push({ idCard, status: "签到成功" });
-                // statusBox.innerHTML = `<span style='color:green'>[${i + 1}/${members.length}] ${idCard} 签到成功</span>`;
-                results.push({ idCard, status: "签到成功" });
-                statusBox.innerHTML = `<span style='color:green'> [${i + 1}/${members.length}] ${idCard} 签到成功</span>`;
-            } else {
-                results.push({ idCard, status: `签到失败: ${signinResult.ErrorMSG || '未知错误'}` });
-                statusBox.innerHTML = `<span style='color:red'>[${i + 1}/${members.length}] ${idCard} 签到失败</span>`;
+                for (let pwd of passwordsToTry) {
+                    const loginPayload = { idCard: idCard, joinTime: pwd };
+                    const loginResponse = await fetch(LOGIN_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1' },
+                        body: JSON.stringify(loginPayload)
+                    });
+                    const loginResult = await loginResponse.json();
+                    if (loginResult.Code === 200 && loginResult.Result && loginResult.Result.Token && loginResult.Result.Token.access_token) {
+                        token = loginResult.Result.Token.access_token;
+                        break;
+                    }
+                }
+
+                if (!token) {
+                    results.push({ idCard, status: "登录失败" });
+                    statusBox.innerHTML = `<span style='color:red'>[${i + 1}/${members.length}] ${idCard} 登录失败</span>`;
+                    await sleep(1000);
+                    continue;
+                }
+
+                const signinResponse = await fetch(`${SIGNIN_URL}?id=${currentActivityId}`, {
+                    headers: { 'Authorization': `Bearer ${token}`, 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1' },
+                });
+                const signinResult = await signinResponse.json();
+
+                if (signinResult.Code === 200) {
+                    results.push({ idCard, status: "签到成功" });
+                    statusBox.innerHTML = `<span style='color:green'> [${i + 1}/${members.length}] ${idCard} 签到成功</span>`;
+                } else {
+                    results.push({ idCard, status: `签到失败: ${signinResult.ErrorMSG || '未知错误'}` });
+                    statusBox.innerHTML = `<span style='color:red'>[${i + 1}/${members.length}] ${idCard} 签到失败</span>`;
+                }
+
+            } catch (error) {
+                results.push({ idCard, status: `异常: ${error.message}` });
+                statusBox.innerHTML = `<span style='color:red'> [${i + 1}/${members.length}] ${idCard} 异常: ${error.message}</span>`;
+                console.error(`签到异常(${idCard}):`, error);
             }
-
-        } catch (error) {
-            results.push({ idCard, status: `异常: ${error.message}` });
-            statusBox.innerHTML = `<span style='color:red'> [${i + 1}/${members.length}] ${idCard} 异常: ${error.message}</span>`;
-            console.error(`签到异常(${idCard}):`, error);
+            await sleep(1500); // 频率控制
         }
-        await sleep(1500); // 每个请求之间增加延迟，防止服务器封禁
+        
+        // 4. 全部循环结束
+        statusBox.innerHTML = "<b style='color:green'>批量签到任务完成！</b>";
+        alert(`批量签到完成！共处理 ${members.length} 人。`);
+        console.table(results);
+
+    } catch (globalError) {
+        // 捕获可能出现的整个循环崩溃
+        statusBox.innerHTML = `<b style='color:red'>程序运行崩溃: ${globalError.message}</b>`;
+    } finally {
+        // 5. 【核心修复】无论如何都把按钮状态变回来
+        btn.disabled = false;
+        btn.innerText = "开始批量签到";
+        btn.style.background = "#2196F3"; // 恢复原来的蓝色
     }
-    
-    statusBox.innerHTML = "<b style='color:green'>批量签到任务完成！</b>";
-    alert(`批量签到完成！共处理 ${members.length} 人。`);
-    console.table(results); // 详细结果可在F12控制台查看
 }
 
 
